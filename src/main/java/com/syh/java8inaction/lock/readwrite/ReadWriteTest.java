@@ -1,4 +1,4 @@
-package com.syh.java8inaction.lock;
+package com.syh.java8inaction.lock.readwrite;
 
 
 public class ReadWriteTest {
