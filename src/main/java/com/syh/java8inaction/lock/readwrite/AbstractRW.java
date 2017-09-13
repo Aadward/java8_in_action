@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public abstract class AbstractRW {
 
     protected long count = 0;
-    protected long goal = 1000 * 1000 * 10;
+    protected long goal = 1000 * 1000;
 
     private int writeThreadNum = 2;
     private int readThreadNum = 16;
