@@ -11,13 +11,13 @@ import com.syh.caffeine.repository.SlowUserRepository;
 import com.syh.caffeine.repository.UserRepository;
 import com.syh.util.StopWatch;
 
-public class NormalCachedUserRepositoryImp{
+public class NormalCache {
 
     private UserRepository repository = new SlowUserRepository();
 
     private LoadingCache<Integer, User> cache;
 
-    public NormalCachedUserRepositoryImp() {
+    public NormalCache() {
         cache = Caffeine.newBuilder()
                 .maximumSize(3) //最多缓存5个
                 //weighter和maximumWeight结合起来用，当缓存对象的weight的和达到10000时，缓存达到上限,
@@ -39,7 +39,7 @@ public class NormalCachedUserRepositoryImp{
 
     public static void main(String[] args) {
         StopWatch sw = new StopWatch();
-        NormalCachedUserRepositoryImp normalCache = new NormalCachedUserRepositoryImp();
+        NormalCache normalCache = new NormalCache();
 
         //        Time used: 3013 MILLISECONDS
         //        Time used: 1 MILLISECONDS

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @CacheConfig(cacheNames = "user", cacheManager = "CaffeineCacheManager")
 @Component
-public class SpringCaffeineUserRepositoryImp {
+public class SpringCaffeineCache {
 
     private UserRepository slowRepository = new SlowUserRepository();
 

@@ -16,7 +16,7 @@ public class SpringContext {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(SpringContext.class);
 
-        SpringCaffeineUserRepositoryImp repository = context.getBean(SpringCaffeineUserRepositoryImp.class);
+        SpringCaffeineCache cache = context.getBean(SpringCaffeineCache.class);
 
 
 
@@ -27,19 +27,19 @@ public class SpringContext {
 
         StopWatch sw = new StopWatch();
         sw.start();
-        IntStream.range(0, 3).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 3).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
 
         sw.start();
-        IntStream.range(0, 3).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 3).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
 
         sw.start();
-        IntStream.range(0, 6).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 6).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
 
         sw.start();
-        IntStream.range(0, 6).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 6).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
 
 
@@ -48,24 +48,24 @@ public class SpringContext {
         //        Time used: 2008 MILLISECONDS
         //        Time used: 3 MILLISECONDS
         System.out.println("===================");
-        repository.clearCache();
+        cache.clearCache();
 
         sw.start();
-        IntStream.range(0, 2).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 2).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
 
-        repository.clearCache();
+        cache.clearCache();
 
         sw.start();
-        IntStream.range(0, 2).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 2).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
 
-        repository.clearCache();
-        repository.addUser(0, new User(0,"user0"));
-        repository.addUser(1, new User(1,"user1"));
+        cache.clearCache();
+        cache.addUser(0, new User(0,"user0"));
+        cache.addUser(1, new User(1,"user1"));
 
         sw.start();
-        IntStream.range(0, 2).boxed().forEach(i -> repository.getUserById(i));
+        IntStream.range(0, 2).boxed().forEach(i -> cache.getUserById(i));
         sw.stop();
     }
 }
