@@ -10,7 +10,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-@CacheConfig(cacheNames = "user", cacheManager = "CaffeineCacheManager")
+@CacheConfig(cacheNames = "user")
 @Component
 public class SpringCaffeineCache {
 
