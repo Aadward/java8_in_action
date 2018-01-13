@@ -1,10 +1,10 @@
-package com.syh.caffeine.spring;
+package com.syh.java8inaction.caffeine.spring;
 
 import java.util.concurrent.TimeUnit;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.syh.caffeine.model.User;
+import com.syh.java8inaction.caffeine.model.User;
 import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;

@@ -1,9 +1,9 @@
-package com.syh.caffeine.spring;
+package com.syh.java8inaction.caffeine.spring;
 
 import java.util.stream.IntStream;
 
-import com.syh.caffeine.model.User;
-import com.syh.util.StopWatch;
+import com.syh.java8inaction.caffeine.model.User;
+import com.syh.java8inaction.util.StopWatch;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;

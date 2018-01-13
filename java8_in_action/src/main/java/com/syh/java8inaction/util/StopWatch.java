@@ -1,4 +1,4 @@
-package com.syh.util;
+package com.syh.java8inaction.util;
 
 
 import java.util.concurrent.TimeUnit;

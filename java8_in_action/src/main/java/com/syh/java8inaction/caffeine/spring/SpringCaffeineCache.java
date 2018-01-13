@@ -1,9 +1,9 @@
-package com.syh.caffeine.spring;
+package com.syh.java8inaction.caffeine.spring;
 
 
-import com.syh.caffeine.model.User;
-import com.syh.caffeine.repository.SlowUserRepository;
-import com.syh.caffeine.repository.UserRepository;
+import com.syh.java8inaction.caffeine.model.User;
+import com.syh.java8inaction.caffeine.repository.SlowUserRepository;
+import com.syh.java8inaction.caffeine.repository.UserRepository;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;

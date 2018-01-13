@@ -1,4 +1,4 @@
-package com.syh.caffeine.model;
+package com.syh.java8inaction.caffeine.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

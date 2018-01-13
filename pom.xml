@@ -24,6 +24,7 @@
 
     <modules>
         <module>java8_in_action</module>
+        <module>serialize</module>
     </modules>
 
     <dependencyManagement>

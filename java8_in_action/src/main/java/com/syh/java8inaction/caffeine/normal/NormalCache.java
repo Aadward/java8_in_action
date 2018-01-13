@@ -1,4 +1,4 @@
-package com.syh.caffeine.normal;
+package com.syh.java8inaction.caffeine.normal;
 
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -6,10 +6,10 @@ import java.util.stream.IntStream;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.RemovalCause;
-import com.syh.caffeine.model.User;
-import com.syh.caffeine.repository.SlowUserRepository;
-import com.syh.caffeine.repository.UserRepository;
-import com.syh.util.StopWatch;
+import com.syh.java8inaction.caffeine.model.User;
+import com.syh.java8inaction.caffeine.repository.SlowUserRepository;
+import com.syh.java8inaction.caffeine.repository.UserRepository;
+import com.syh.java8inaction.util.StopWatch;
 
 public class NormalCache {
 

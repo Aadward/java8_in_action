@@ -1,8 +1,8 @@
-package com.syh.caffeine.repository;
+package com.syh.java8inaction.caffeine.repository;
 
 import java.util.concurrent.TimeUnit;
 
-import com.syh.caffeine.model.User;
+import com.syh.java8inaction.caffeine.model.User;
 import org.springframework.stereotype.Component;
 
 @Component
