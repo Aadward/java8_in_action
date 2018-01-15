@@ -1,13 +1,13 @@
 package com.syh.jacksonusage.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.syh.jacksonusage.model.Message;
 import com.syh.jacksonusage.model.Views;
 import com.syh.jacksonusage.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/jsonview")
@@ -19,7 +19,15 @@ public class JsonViewController {
     @GetMapping("/summary")
     @JsonView(Views.Summary.class)
     public Message summary() {
-        return dataService.getMessage();
+        Message message = dataService.getMessage();
+        return message;
+    }
+
+
+    @PostMapping("/summary_deserialize")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void constructMessage(@RequestBody Message body) {
+        System.out.println(body);
     }
 
 }
