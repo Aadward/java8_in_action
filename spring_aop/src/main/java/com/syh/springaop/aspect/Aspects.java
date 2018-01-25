@@ -19,37 +19,27 @@ public class Aspects {
     }
 
     /**
-     * 更加灵活地控制在何时调用，这个调用和doNothing()达到一样的效果，并且抛出
-     * 一个RuntimeException阻止真正的doNothing()方法调用.
+     * 更加灵活地控制在何时调用，这个调用和throwException()达到一样的效果，并且抛出
+     * 一个RuntimeException阻止真正的throwException()方法调用.
      */
-    @Around("execution(* com.syh.springaop.test.TestInterface.doNothing(String))")
-    public void aroundDoNothingThrowException(ProceedingJoinPoint joinPoint) {
-        aroundBefore();
-        throw new RuntimeException("doNothing() will not execute");
-    }
-
-    @Around("execution(* com.syh.springaop.test.TestInterface.doNothing(String))")
-    public void aroundSaveNormal(ProceedingJoinPoint joinPoint) throws Throwable {
-        aroundBefore();
-        joinPoint.proceed(joinPoint.getArgs());
-        aroundAfter();
+    @Around("execution(* com.syh.springaop.test.TestInterface.throwException())")
+    public void aroundGetThrowException(ProceedingJoinPoint joinPoint) {
+        //因为在调用joinPoint.proceed()之前抛出了异常，所以该方法不会执行
+        throw new RuntimeException("throwException() will not execute");
     }
 
 
     /**
-     * 这个方法用于测试Around在调用proceed()之前运行情况
+     * joinPoint.proceed()显示调用目标方法，可以灵活地在调用方法之前、之后做操作
      */
-
-    public void aroundBefore() {
-        //do nothing
+    @Around("execution(* com.syh.springaop.test.TestInterface.get(..))")
+    public void aroundGet(ProceedingJoinPoint joinPoint) throws Throwable {
+        //在get方法的之前做一些操作
+        Object[] args = joinPoint.getArgs();
+        System.out.println("Before calling joinPoint.proceed(), args=" + args[0]);
+        String result = (String) joinPoint.proceed(joinPoint.getArgs());
+        //在get方法调用后
+        System.out.println("After calling joinPoint.proceed(), result=" + result);
     }
-
-    /**
-     * 这个方法用于测试Around在调用proceed()之后运行情况
-     */
-    public void aroundAfter() {
-
-    }
-
 
 }

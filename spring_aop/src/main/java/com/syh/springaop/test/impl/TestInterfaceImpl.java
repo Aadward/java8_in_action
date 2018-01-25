@@ -8,11 +8,17 @@ public class TestInterfaceImpl implements TestInterface {
 
     @Override
     public void doNothing(String message) {
-        //do nothing
+        System.out.println("Invoke doNothing()");
     }
 
     @Override
     public String get(int id) {
+        System.out.println("Invoke get()");
         return "test";
+    }
+
+    @Override
+    public void throwException() {
+        System.out.println("Invoke throwException()");
     }
 }

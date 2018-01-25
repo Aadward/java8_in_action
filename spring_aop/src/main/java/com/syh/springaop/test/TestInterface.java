@@ -5,4 +5,6 @@ public interface TestInterface {
     void doNothing(String message);
 
     String get(int id);
+
+    void throwException();
 }

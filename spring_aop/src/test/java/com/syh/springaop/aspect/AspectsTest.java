@@ -17,23 +17,31 @@ public class AspectsTest {
     Aspects aspects;
 
     @SpyBean
-    TestInterface dao;
+    TestInterface obj;
 
     @Test
-    public void test_beforeDoNothing() {
-        dao.doNothing("");
-        verify(aspects, times(1)).beforeDoNothing();
+    public void test_doNothing() {
+        obj.doNothing("");
+        verify(aspects, only()).beforeDoNothing();
     }
 
     @Test
-    public void test_aroundSaveThrowException() {
+    public void test_throwException() {
         try {
-            dao.doNothing("");
+            obj.throwException();
         } catch (RuntimeException e) {
             //do nothing
         }
 
-        verify(aspects, times(1)).aroundDoNothingThrowException(any());
-        verify(dao, never()).doNothing(anyString());
+        verify(aspects, only()).aroundGetThrowException(any());
     }
+
+
+    @Test
+    public void test_get() throws Throwable {
+        obj.get(1);
+
+        verify(aspects, only()).aroundGet(any());
+    }
+
 }
