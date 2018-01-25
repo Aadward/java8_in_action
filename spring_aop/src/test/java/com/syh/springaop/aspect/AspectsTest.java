@@ -40,7 +40,6 @@ public class AspectsTest {
     @Test
     public void test_get() throws Throwable {
         obj.get(1);
-
         verify(aspects, only()).aroundGet(any());
     }
 

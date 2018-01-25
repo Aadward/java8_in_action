@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class Aspects {
 
     /**
-     * 在执行实现类的doNothing()方法之前会调用这个方法。@After同理
+     * 在执行实现类的doNothing()方法之前会调用这个方法，@After同理。
      */
     @Before("execution(* com.syh.springaop.test.TestInterface.doNothing(String))")
     public void beforeDoNothing() {
@@ -19,8 +19,7 @@ public class Aspects {
     }
 
     /**
-     * 更加灵活地控制在何时调用，这个调用和throwException()达到一样的效果，并且抛出
-     * 一个RuntimeException阻止真正的throwException()方法调用.
+     * 抛出一个RuntimeException阻止目标方法throwException()的调用。
      */
     @Around("execution(* com.syh.springaop.test.TestInterface.throwException())")
     public void aroundGetThrowException(ProceedingJoinPoint joinPoint) {
@@ -30,7 +29,7 @@ public class Aspects {
 
 
     /**
-     * joinPoint.proceed()显示调用目标方法，可以灵活地在调用方法之前、之后做操作
+     * joinPoint.proceed()显式调用目标方法，可以灵活地在调用方法之前、之后做操作。
      */
     @Around("execution(* com.syh.springaop.test.TestInterface.get(..))")
     public void aroundGet(ProceedingJoinPoint joinPoint) throws Throwable {
