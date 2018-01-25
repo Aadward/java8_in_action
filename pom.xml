@@ -25,7 +25,7 @@
 
     <modules>
         <module>java8_in_action</module>
-        <module>serialize</module>
+        <module>spring_aop</module>
         <module>jackson_usage</module>
     </modules>
 
