@@ -27,6 +27,7 @@
         <module>java8_in_action</module>
         <module>spring_aop</module>
         <module>jackson_usage</module>
+        <module>guice</module>
     </modules>
 
     <dependencyManagement>

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class DataService {
 
     public Message getMessage() {
-        User user = new User(1L, "firstname", "lastname",
+        User user = new User(1L, "firstName", "lastName",
                 "email", "address", "postalCode",
                 "city", "country");
         Message message = new Message(2L, LocalDate.now(), "title",
