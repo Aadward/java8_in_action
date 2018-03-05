@@ -5,9 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.syh.jacksonusage.controller.JsonViewController;
-import com.syh.jacksonusage.model.Message;
-import org.assertj.core.api.Assertions;
+import com.syh.jacksonusage.model.ValidMessage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,5 +47,32 @@ public class JacksonUsageApplicationTests {
 				.content(ret))
 				.andExpect(status().isAccepted());
 	}
+
+
+	@Test
+    public void testValid() throws Exception {
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    String json = objectMapper.writeValueAsString(new ValidMessage(1L, "123", "234"));
+
+        mvc.perform(post("/jsonview/valid")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andDo(print())
+                .andExpect(status().isAccepted());
+
+    }
+
+    @Test
+    public void testValid_error() throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(new ValidMessage(1L, "123", "234dsfodsfodsbfodsbfos"));
+
+        mvc.perform(post("/jsonview/valid")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+    }
 
 }
