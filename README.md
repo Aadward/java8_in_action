@@ -1,2 +1,3 @@
-# java8_in_action
-example in java8 in action.
+# Examples
+- Code fragment.
+- Basic usage of frameworks.
