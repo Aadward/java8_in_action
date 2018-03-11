@@ -1,12 +1,16 @@
 package com.syh.jacksonusage.controller;
 
+import javax.validation.Valid;
+
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.syh.jacksonusage.exception.BadParameterException;
 import com.syh.jacksonusage.model.Message;
+import com.syh.jacksonusage.model.ValidMessage;
 import com.syh.jacksonusage.model.Views;
 import com.syh.jacksonusage.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,4 +34,15 @@ public class JsonViewController {
         System.out.println(body);
     }
 
+
+    @PostMapping("/valid")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void valid(@RequestBody @Valid ValidMessage message, Errors errors) {
+        if (errors.hasErrors()) {
+            StringBuilder sb = new StringBuilder();
+            errors.getAllErrors().forEach(e -> sb.append(e.getDefaultMessage()).append("\n"));
+            throw new BadParameterException(sb.toString());
+        }
+        System.out.println(message);
+    }
 }
