@@ -1,0 +1,19 @@
+spring.profiles.active: xml, h2
+
+DB_CLOSE_ON_EXIT: FALSE
+spring.h2.console.enabled: true
+
+spring.datasource.schema: classpath:schema.sql
+
+---
+spring.profiles: annotation
+
+
+
+---
+spring.profiles: xml
+
+mybatis:
+  config-locations: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  type-aliases-package: com.syh.mybatis_demo.po

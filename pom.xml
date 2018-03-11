@@ -28,6 +28,7 @@
         <module>spring_aop</module>
         <module>jackson_usage</module>
         <module>guice</module>
+        <module>mybatis_demo</module>
     </modules>
 
     <dependencyManagement>
@@ -49,6 +50,12 @@
                 <artifactId>lombok</artifactId>
                 <version>1.16.18</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>3.4.5</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
