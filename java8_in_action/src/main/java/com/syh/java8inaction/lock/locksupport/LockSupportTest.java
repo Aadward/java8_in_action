@@ -21,6 +21,7 @@ public class LockSupportTest {
 
         while (waiters.peek() != current ||
                 !isLocked.compareAndSet(false, true)) {
+            //阻止当前线程的调度
             LockSupport.park(this);
             //因为park也要响应中断，判断是否被其他线程中断并且将结果保存在临时变量中
             //isInterrupt()会把中断状态置为false

@@ -11,12 +11,14 @@ import java.util.stream.IntStream;
 public class FindPrime {
 
     public static void main(String[] args) {
-        System.out.println(findByForkJoinPool(1, 100));
+        System.out.println("Result: \n" + findByForkJoinPool(1, 100));
     }
 
     public static List<Integer> findByForkJoinPool(int lo, int hi) {
         ForkJoinPool pool = ForkJoinPool.commonPool();
-        return pool.invoke(new PrimeNumberTask(lo, hi));
+        List<Integer> results = pool.invoke(new PrimeNumberTask(lo, hi));
+        System.out.println("Information of the ForkJoinPool: \n" + pool);
+        return results;
     }
 
     static class PrimeNumberTask extends RecursiveTask<List<Integer>> {
