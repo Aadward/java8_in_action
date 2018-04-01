@@ -27,13 +27,20 @@ public class SortVerifier {
 
     static int[] getRamdomArray(int size) {
         return IntStream
-                .generate(SortVerifier::generator)
+                .generate(() -> generator(Integer.MAX_VALUE))
                 .limit(size)
                 .toArray();
     }
 
-    static int generator() {
-        return random.nextInt(Integer.MAX_VALUE);
+    static int[] getRamdomArray(int size, int max) {
+        return IntStream
+                .generate(() -> generator(max))
+                .limit(size)
+                .toArray();
+    }
+
+    static int generator(int max) {
+        return random.nextInt(max);
     }
 
     static String print(int[] a) {
