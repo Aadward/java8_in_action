@@ -29,6 +29,7 @@
         <module>jackson_usage</module>
         <module>guice</module>
         <module>mybatis_demo</module>
+        <module>zookeeper-demo</module>
     </modules>
 
     <dependencyManagement>
