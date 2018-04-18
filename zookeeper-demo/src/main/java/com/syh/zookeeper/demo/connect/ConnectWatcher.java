@@ -1,4 +1,4 @@
-package com.syh.zookeeper.demo.watcher;
+package com.syh.zookeeper.demo.connect;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
