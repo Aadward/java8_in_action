@@ -30,6 +30,7 @@
         <module>guice</module>
         <module>mybatis_demo</module>
         <module>zookeeper-demo</module>
+        <module>spring-boot-jdbc-demo</module>
     </modules>
 
     <dependencyManagement>
