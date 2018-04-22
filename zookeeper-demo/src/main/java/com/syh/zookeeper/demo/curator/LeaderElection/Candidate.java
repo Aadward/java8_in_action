@@ -23,7 +23,7 @@ public abstract class Candidate extends LeaderSelectorListenerAdapter
     }
 
     public void start() {
-        //Wait for taking next leadership after releasing leadership.
+        //For taking next leadership after releasing leadership.
         selector.autoRequeue();
         selector.start();
     }
