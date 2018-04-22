@@ -1,9 +1,9 @@
-package com.syh.zookeeper.demo;
+package com.syh.zookeeper.demo.primitive;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
-import com.syh.zookeeper.demo.producercustomer.IZkDataListener;
+import com.syh.zookeeper.demo.primitive.ps.IZkDataListener;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -11,6 +11,10 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+
+/**
+ * @author syh
+ */
 
 public class ZkClient {
 

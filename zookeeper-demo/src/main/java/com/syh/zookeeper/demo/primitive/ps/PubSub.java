@@ -1,11 +1,17 @@
-package com.syh.zookeeper.demo.producercustomer;
+package com.syh.zookeeper.demo.primitive.ps;
 
 import java.util.concurrent.TimeUnit;
 
-import com.syh.zookeeper.demo.ZkClient;
+import com.syh.zookeeper.demo.primitive.ZkClient;
 import org.apache.zookeeper.KeeperException;
 
-public class Test {
+/**
+ * This is a simple example of publisher and subscriber pattern
+ * which works with zookeeper.
+ *
+ * @author syh
+ */
+public class PubSub {
 
     public static void main(String[] args) throws KeeperException, InterruptedException {
         ZkClient zkClient = new ZkClient("localhost:2181", 10000);

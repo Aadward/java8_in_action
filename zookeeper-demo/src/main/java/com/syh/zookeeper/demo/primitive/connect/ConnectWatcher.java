@@ -1,4 +1,4 @@
-package com.syh.zookeeper.demo.connect;
+package com.syh.zookeeper.demo.primitive.connect;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -7,6 +7,11 @@ import org.apache.zookeeper.ZooKeeper;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * A simple example of build connection synchronously.
+ *
+ * @author syh
+ */
 public class ConnectWatcher implements Watcher {
 
     static CountDownLatch lock = new CountDownLatch(1);
