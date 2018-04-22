@@ -2,7 +2,6 @@ package com.syh.zookeeper.demo.primitive.ps;
 
 import java.util.concurrent.TimeUnit;
 
-import com.syh.zookeeper.demo.primitive.ZkClient;
 import org.apache.zookeeper.KeeperException;
 
 /**

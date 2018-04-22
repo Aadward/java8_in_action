@@ -1,113 +1,121 @@
 package com.syh.zookeeper.demo.primitive;
 
+import org.apache.zookeeper.*;
+
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-
-import com.syh.zookeeper.demo.primitive.ps.IZkDataListener;
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
-
-/**
- * @author syh
- */
+import java.util.concurrent.TimeUnit;
 
 public class ZkClient {
 
-    private String zkServers;
-    private int sessionTimeout;
+    private static final int DEFAULT_SESSION_TIMEOUT = 10000;
 
-    private ZooKeeper zk;
+    private ZooKeeper zooKeeper;
 
-    public ZkClient(String zkServers, int sessionTimeout) {
-        this.zkServers = zkServers;
-        this.sessionTimeout = sessionTimeout;
-        connect();
+    private int retryCount;
+
+    public ZkClient(ZooKeeper zooKeeper, int retryCount) {
+        this.zooKeeper = zooKeeper;
+        this.retryCount = retryCount;
     }
 
-    private void connect() {
-        CountDownLatch waitLatch = new CountDownLatch(1);
+    public static ZkClient createClient(String servers) {
+        Builder builder = new Builder(servers);
+        builder.sessionTimeout(DEFAULT_SESSION_TIMEOUT)
+                .defaultWatcher(new PrintWatcher())
+                .retry(5);
+        return builder.build();
+    }
+
+    public ZooKeeper getPrimitiveClient() {
+        return this.zooKeeper;
+    }
+
+    public void registerWatcherOnNode(String nodePath, Watcher watcher)
+            throws KeeperException, InterruptedException {
+        zooKeeper.exists(nodePath, watcher);
+    }
+
+    public void setData(String nodePath, byte[] data, boolean createIfAbsent)
+            throws KeeperException, InterruptedException {
         try {
-            zk = new ZooKeeper(zkServers, sessionTimeout,
-                    event -> {
-                        System.out.println("Connect to zookeeper successful");
-                        waitLatch.countDown();
-                    }
-            );
-        } catch (IOException e) {
-            System.out.println("Create zookeeper client fail because of network problem");
-            e.printStackTrace();
-        }
-        while (zk == null || (zk != null && !zk.getState().isConnected())) {
-            try {
-                waitLatch.await();
-            } catch (InterruptedException e) {
-                System.out.println("Interrupted");
-                e.printStackTrace();
+            zooKeeper.setData(nodePath, data, -1);
+        } catch (KeeperException.NoNodeException e) {
+            if (createIfAbsent) {
+                zooKeeper.create(nodePath, data, ZooDefs.Ids.OPEN_ACL_UNSAFE,
+                        CreateMode.PERSISTENT);
+            } else {
+                throw e;
             }
         }
     }
 
+    public static class Builder {
+        private String servers;
+        private int sessionTimeout;
+        private Watcher defaultWatcher;
+        private int retryCount;
 
-    public boolean createNode(String nodePath, String value) {
-        try {
-            zk.create(nodePath,
-                    value.getBytes(),
-                    ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                    CreateMode.PERSISTENT);
-        } catch (KeeperException.NodeExistsException e) {
-            //ok
-        } catch (KeeperException | InterruptedException e) {
-            e.printStackTrace();
-            return false;
+        public Builder(String servers) {
+            this.servers = servers;
         }
 
-        return true;
-    }
-
-    public void publish(String nodePath, String value) throws KeeperException, InterruptedException {
-        Stat stat;
-        try {
-            stat = zk.setData(nodePath, value.getBytes(), -1);
-        } catch (KeeperException.NoNodeException e) {
-            createNode(nodePath, value);
-            stat = zk.exists(nodePath, false);
+        public Builder sessionTimeout(int sessionTimeout) {
+            this.sessionTimeout = sessionTimeout;
+            return this;
         }
-        if (stat == null) {
-            throw new Error("Fail to watch");
+
+        public Builder defaultWatcher(Watcher watcher) {
+            this.defaultWatcher = watcher;
+            return this;
         }
-    }
 
-    public void subscribe(String nodePath, IZkDataListener listener)
-            throws KeeperException, InterruptedException {
+        public Builder retry(int retryCount) {
+            this.retryCount = retryCount;
+            return this;
+        }
 
-        Watcher watcher = new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
+        public ZkClient build() {
+            int retry = this.retryCount;
+            ZooKeeper zooKeeper;
+            while (true) {
                 try {
-                    zk.exists(event.getPath(), this);
-                    if (event.getType() == Watcher.Event.EventType.NodeDataChanged) {
-                        byte[] data = zk.getData(event.getPath(), false, new Stat());
-                        listener.handleDataChanged(event.getPath(), data);
+                    zooKeeper = new ZooKeeper(servers, sessionTimeout, defaultWatcher);
+                    return new ZkClient(zooKeeper, retryCount);
+                } catch (IOException e) {
+                    if (retry-- <= 0) {
+                        throw new Error("Can not connect to zookeeper server");
                     }
-                } catch (InterruptedException | KeeperException e) {
-                    e.printStackTrace();
                 }
             }
-        };
-
-        Stat stat = zk.exists(nodePath, watcher);
-
-        if (stat == null) {
-            createNode(nodePath, "");
-            stat = zk.exists(nodePath, watcher);
-        }
-        if (stat == null) {
-            throw new Error("Fail to watch");
         }
     }
+
+
+    private static class PrintWatcher implements Watcher {
+
+        @Override
+        public void process(WatchedEvent event) {
+            System.out.println("=====Event Arrive====\n" + event);
+        }
+    }
+    
+    public static void main(String[] args) throws InterruptedException, KeeperException {
+        ZkClient client = ZkClient.createClient("localhost:2181");
+        TimeUnit.SECONDS.sleep(2);
+
+        client.registerWatcherOnNode("/test/exist", new Watcher() {
+            @Override
+            public void process(WatchedEvent event) {
+                if (event.getType() == Event.EventType.NodeCreated) {
+                    System.out.println("/test/exist created:" + event.getState());
+                } else if (event.getType() == Event.EventType.NodeDataChanged) {
+                    System.out.println("/test/exist changed:" + event.getState());
+                }
+            }
+        });
+
+        client.setData("/test/exist", "data".getBytes(), true);
+        TimeUnit.SECONDS.sleep(2);
+    }
+
 }
