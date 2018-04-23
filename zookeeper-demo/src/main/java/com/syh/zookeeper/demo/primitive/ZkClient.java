@@ -1,8 +1,11 @@
 package com.syh.zookeeper.demo.primitive;
 
 import org.apache.zookeeper.*;
+import org.apache.zookeeper.data.Stat;
 
 import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class ZkClient {
@@ -13,9 +16,17 @@ public class ZkClient {
 
     private int retryCount;
 
+    private Set<IZkStateListener> stateListeners;
+    private Map<String, Set<IZkDataListener>> dataListeners;
+    private Map<String, Set<IZkChildListener>> childListeners;
+
     public ZkClient(ZooKeeper zooKeeper, int retryCount) {
         this.zooKeeper = zooKeeper;
         this.retryCount = retryCount;
+
+        stateListeners = Collections.synchronizedSet(new HashSet<>());
+        dataListeners = new ConcurrentHashMap<>();
+        childListeners = new ConcurrentHashMap<>();
     }
 
     public static ZkClient createClient(String servers) {
@@ -24,6 +35,66 @@ public class ZkClient {
                 .defaultWatcher(new PrintWatcher())
                 .retry(5);
         return builder.build();
+    }
+
+    public void subscribeStateChanged(IZkStateListener listener) {
+        stateListeners.add(listener);
+    }
+
+    public void subscribeDataChanged(String path, IZkDataListener listener) {
+        dataListeners
+                .computeIfAbsent(path, key -> Collections.synchronizedSet(new HashSet<>()))
+                .add(listener);
+    }
+
+    public void subscribeChildChanged(String path, IZkChildListener listener) {
+        childListeners
+                .computeIfAbsent(path, key -> Collections.synchronizedSet(new HashSet<>()))
+                .add(listener);
+    }
+
+    private void handleStateChanged(Watcher.Event.KeeperState state) {
+        stateListeners.forEach(listener -> {
+            listener.onStateChanged(state);
+        });
+    }
+
+    private void handleDataChanged(WatchedEvent event) {
+        String path = event.getPath();
+        boolean isNodeDeleted = event.getType() == Watcher.Event.EventType.NodeDeleted;
+
+        if (isNodeDeleted) {
+            dataListeners.getOrDefault(path, new HashSet<>())
+                    .forEach(listener -> listener.onNodeDeleted(path));
+        } else {
+            dataListeners.getOrDefault(path, new HashSet<>())
+                    .forEach(listener -> listener.onNodeDataChanged(path, readData(path)));
+        }
+    }
+
+    private void handleChildChanged(String path) {
+        childListeners.getOrDefault(path, new HashSet<>())
+                .forEach(listener -> listener.onChildChanged(path, getChildren(path)));
+    }
+
+    private Optional<String> readData(String path) {
+        Stat stat = new Stat();
+        try {
+            byte[] data = zooKeeper.getData(path, false, stat);
+            return Optional.of(new String(data));
+        } catch (KeeperException.NoNodeException e) {
+            return Optional.empty();
+        } catch (KeeperException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<String> getChildren(String path) {
+        try {
+            return zooKeeper.getChildren(path, false);
+        } catch (KeeperException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ZooKeeper getPrimitiveClient() {
@@ -98,7 +169,7 @@ public class ZkClient {
             System.out.println("=====Event Arrive====\n" + event);
         }
     }
-    
+
     public static void main(String[] args) throws InterruptedException, KeeperException {
         ZkClient client = ZkClient.createClient("localhost:2181");
         TimeUnit.SECONDS.sleep(2);
