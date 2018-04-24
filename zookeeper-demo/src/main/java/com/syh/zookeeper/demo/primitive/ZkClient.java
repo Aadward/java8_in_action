@@ -2,79 +2,105 @@ package com.syh.zookeeper.demo.primitive;
 
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A simple zookeeper client for DEMO, many exceptions are not handled and just
+ * throw them inside a RuntimeException.
+ *
+ * @author Yuhang Shen
+ */
 public class ZkClient {
 
     private static final int DEFAULT_SESSION_TIMEOUT = 10000;
+    private static final int N_THREAD = Runtime.getRuntime().availableProcessors();
 
     private ZooKeeper zooKeeper;
-
-    private int retryCount;
 
     private Set<IZkStateListener> stateListeners;
     private Map<String, Set<IZkDataListener>> dataListeners;
     private Map<String, Set<IZkChildListener>> childListeners;
 
-    public ZkClient(ZooKeeper zooKeeper, int retryCount) {
-        this.zooKeeper = zooKeeper;
-        this.retryCount = retryCount;
+    private ThreadPoolExecutor eventThread;
+
+    private ZkClient(String servers, int sessionTimeout) {
+        try {
+            this.zooKeeper = new ZooKeeper(servers, sessionTimeout, new DefaultWatcher());
+        } catch (IOException e) {
+            throw new Error("Connect fail");
+        }
 
         stateListeners = Collections.synchronizedSet(new HashSet<>());
         dataListeners = new ConcurrentHashMap<>();
         childListeners = new ConcurrentHashMap<>();
+
+        eventThread = new ThreadPoolExecutor(N_THREAD, N_THREAD, 1, TimeUnit.MINUTES,
+                new LinkedBlockingQueue<>());
     }
 
     public static ZkClient createClient(String servers) {
-        Builder builder = new Builder(servers);
-        builder.sessionTimeout(DEFAULT_SESSION_TIMEOUT)
-                .defaultWatcher(new PrintWatcher())
-                .retry(5);
-        return builder.build();
+        return new ZkClient(servers, DEFAULT_SESSION_TIMEOUT);
     }
 
     public void subscribeStateChanged(IZkStateListener listener) {
         stateListeners.add(listener);
+        watchNode("/");
     }
 
     public void subscribeDataChanged(String path, IZkDataListener listener) {
         dataListeners
                 .computeIfAbsent(path, key -> Collections.synchronizedSet(new HashSet<>()))
                 .add(listener);
+        watchNode(path);
     }
 
     public void subscribeChildChanged(String path, IZkChildListener listener) {
         childListeners
                 .computeIfAbsent(path, key -> Collections.synchronizedSet(new HashSet<>()))
                 .add(listener);
+        watchChild(path);
     }
 
     private void handleStateChanged(Watcher.Event.KeeperState state) {
         stateListeners.forEach(listener -> {
+            watchNode("/");
             listener.onStateChanged(state);
         });
     }
 
-    private void handleDataChanged(WatchedEvent event) {
+    private void handleNodeChanged(WatchedEvent event) {
         String path = event.getPath();
         boolean isNodeDeleted = event.getType() == Watcher.Event.EventType.NodeDeleted;
 
         if (isNodeDeleted) {
             dataListeners.getOrDefault(path, new HashSet<>())
-                    .forEach(listener -> listener.onNodeDeleted(path));
+                    .forEach(listener -> {
+                        watchNode(path);
+                        listener.onNodeDeleted(path);
+                    });
         } else {
             dataListeners.getOrDefault(path, new HashSet<>())
-                    .forEach(listener -> listener.onNodeDataChanged(path, readData(path)));
+                    .forEach(listener -> {
+                        watchNode(path);
+                        listener.onNodeDataChanged(path, readData(path));
+                    });
         }
     }
 
     private void handleChildChanged(String path) {
         childListeners.getOrDefault(path, new HashSet<>())
-                .forEach(listener -> listener.onChildChanged(path, getChildren(path)));
+                .forEach(listener -> {
+                    watchChild(path);
+                    listener.onChildChanged(path, getChildren(path));
+                });
     }
 
     private Optional<String> readData(String path) {
@@ -101,11 +127,6 @@ public class ZkClient {
         return this.zooKeeper;
     }
 
-    public void registerWatcherOnNode(String nodePath, Watcher watcher)
-            throws KeeperException, InterruptedException {
-        zooKeeper.exists(nodePath, watcher);
-    }
-
     public void setData(String nodePath, byte[] data, boolean createIfAbsent)
             throws KeeperException, InterruptedException {
         try {
@@ -120,73 +141,81 @@ public class ZkClient {
         }
     }
 
-    public static class Builder {
-        private String servers;
-        private int sessionTimeout;
-        private Watcher defaultWatcher;
-        private int retryCount;
-
-        public Builder(String servers) {
-            this.servers = servers;
-        }
-
-        public Builder sessionTimeout(int sessionTimeout) {
-            this.sessionTimeout = sessionTimeout;
-            return this;
-        }
-
-        public Builder defaultWatcher(Watcher watcher) {
-            this.defaultWatcher = watcher;
-            return this;
-        }
-
-        public Builder retry(int retryCount) {
-            this.retryCount = retryCount;
-            return this;
-        }
-
-        public ZkClient build() {
-            int retry = this.retryCount;
-            ZooKeeper zooKeeper;
-            while (true) {
-                try {
-                    zooKeeper = new ZooKeeper(servers, sessionTimeout, defaultWatcher);
-                    return new ZkClient(zooKeeper, retryCount);
-                } catch (IOException e) {
-                    if (retry-- <= 0) {
-                        throw new Error("Can not connect to zookeeper server");
-                    }
-                }
-            }
+    private void watchNode(String path) {
+        try {
+            zooKeeper.exists(path, true);
+        } catch (KeeperException | InterruptedException e) {
+            throw new Error(e);
         }
     }
 
+    private void watchChild(String path) {
+        try {
+            zooKeeper.getChildren(path, true);
+        } catch (KeeperException | InterruptedException e) {
+            throw new Error(e);
+        }
+    }
 
-    private static class PrintWatcher implements Watcher {
+    public void close() {
+        try {
+            zooKeeper.close();
+            eventThread.shutdown();
+        } catch (InterruptedException e) {
+            throw new Error(e);
+        }
+    }
+
+    private class DefaultWatcher implements Watcher {
 
         @Override
         public void process(WatchedEvent event) {
             System.out.println("=====Event Arrive====\n" + event);
+
+            if (event.getType() == Event.EventType.None) {
+                eventThread.execute(() -> handleStateChanged(event.getState()));
+            } else if (event.getType() == Event.EventType.NodeCreated
+                    || event.getType() == Event.EventType.NodeDataChanged
+                    || event.getType() == Event.EventType.NodeDeleted) {
+                eventThread.execute(() -> handleNodeChanged(event));
+            } else if (event.getType() == Event.EventType.NodeChildrenChanged) {
+                eventThread.execute(() -> handleChildChanged(event.getPath()));
+            }
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, KeeperException {
+    public static void main(String[] args) throws InterruptedException {
         ZkClient client = ZkClient.createClient("localhost:2181");
+        client.subscribeStateChanged(state -> {
+            System.out.println("state changed: " + state);
+        });
         TimeUnit.SECONDS.sleep(2);
 
-        client.registerWatcherOnNode("/test/exist", new Watcher() {
+        client.subscribeDataChanged("/test", new IZkDataListener() {
             @Override
-            public void process(WatchedEvent event) {
-                if (event.getType() == Event.EventType.NodeCreated) {
-                    System.out.println("/test/exist created:" + event.getState());
-                } else if (event.getType() == Event.EventType.NodeDataChanged) {
-                    System.out.println("/test/exist changed:" + event.getState());
-                }
+            public void onNodeDataChanged(String path, Optional<String> data) {
+                System.out.println("node changed, new data:" + data.orElse(""));
+            }
+
+            @Override
+            public void onNodeDeleted(String path) {
+                System.out.println("node deleted");
             }
         });
 
-        client.setData("/test/exist", "data".getBytes(), true);
-        TimeUnit.SECONDS.sleep(2);
+        client.subscribeChildChanged("/test", new IZkChildListener() {
+            @Override
+            public void onChildChanged(String path, List<String> children) {
+                System.out.println("child changed, children=" + children);
+            }
+        });
+
+        System.out.println("PRESS <ENTER> TO EXIT");
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
+
+        client.close();
+
     }
 
 }
