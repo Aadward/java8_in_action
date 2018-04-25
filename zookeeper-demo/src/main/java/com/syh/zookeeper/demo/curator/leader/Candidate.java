@@ -1,4 +1,4 @@
-package com.syh.zookeeper.demo.curator.LeaderElection;
+package com.syh.zookeeper.demo.curator.leader;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;

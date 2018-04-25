@@ -1,35 +1,48 @@
 package com.syh.zookeeper.demo.primitive.ps;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.zookeeper.KeeperException;
+import com.syh.zookeeper.demo.primitive.IZkDataListener;
+import com.syh.zookeeper.demo.primitive.ZkClient;
 
 /**
  * This is a simple example of publisher and subscriber pattern
  * which works with zookeeper.
  *
- * @author syh
+ * If many changes happen in a short time, some changes may not notify the listeners
+ * registered, but you can always get the newest data.
+ *
+ * @author Yuhang Shen
  */
 public class PubSub {
 
-    public static void main(String[] args) throws KeeperException, InterruptedException {
-        ZkClient zkClient = new ZkClient("localhost:2181", 10000);
+    public static void main(String[] args) throws InterruptedException {
+        ZkClient zkClient = null;
+        try {
+            zkClient = ZkClient.createClient("localhost:2181");
+            zkClient.subscribeDataChanged("/test", new IZkDataListener() {
+                @Override
+                public void onNodeDataChanged(String path, Optional<String> data) {
+                    System.out.println("Node " + path + " changed, value = " + data.orElse(""));
+                }
 
-        zkClient.subscribe("/test", (path, data) -> {
-            System.out.println("subscriber1: Node data changed");
-            System.out.println("subscriber1: Value is: " + new String(data));
-        });
+                @Override
+                public void onNodeDeleted(String path) {
+                    System.out.println("Node " + path + " deleted");
+                }
+            });
 
-        zkClient.subscribe("/test", (path, data) -> {
-            System.out.println("subscriber2: Node data changed");
-            System.out.println("subscriber2: Value is: " + new String(data));
-        });
-
-
-        int count = 0;
-        while (count < 10) {
-            zkClient.publish("/test", (count++) + "");
-            TimeUnit.SECONDS.sleep(1);
+            int count = 5;
+            while (count-- > 0) {
+                zkClient.setData("/test", (count + "").getBytes(), true);
+                TimeUnit.SECONDS.sleep(1);
+            }
+        } finally {
+            if (zkClient != null) {
+                zkClient.close();
+            }
         }
+
     }
 }

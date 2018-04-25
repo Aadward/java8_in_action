@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * A simple zookeeper client for DEMO, many exceptions are not handled and just
@@ -20,7 +21,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class ZkClient {
 
-    private static final int DEFAULT_SESSION_TIMEOUT = 10000;
+    private static final Logger logger = LoggerFactory.getLogger(ZkClient.class);
+
+    private static final int DEFAULT_SESSION_TIMEOUT = 1000000000;
     private static final int N_THREAD = Runtime.getRuntime().availableProcessors();
 
     private ZooKeeper zooKeeper;
@@ -35,7 +38,7 @@ public class ZkClient {
         try {
             this.zooKeeper = new ZooKeeper(servers, sessionTimeout, new DefaultWatcher());
         } catch (IOException e) {
-            throw new Error("Connect fail");
+            throw new RuntimeException("Connect fail");
         }
 
         stateListeners = Collections.synchronizedSet(new HashSet<>());
@@ -99,7 +102,7 @@ public class ZkClient {
         childListeners.getOrDefault(path, new HashSet<>())
                 .forEach(listener -> {
                     watchChild(path);
-                    listener.onChildChanged(path, getChildren(path));
+                    listener.onChildChanged(path, getChildren(path, true));
                 });
     }
 
@@ -115,9 +118,22 @@ public class ZkClient {
         }
     }
 
-    private List<String> getChildren(String path) {
+    public List<String> getChildren(String path, boolean fullPath) {
         try {
-            return zooKeeper.getChildren(path, false);
+            List<String> children = zooKeeper.getChildren(path, false);
+            if (fullPath) {
+                children = children.stream()
+                                   .map(s -> {
+                                       String childPath = path;
+                                       if (!path.endsWith("/")) {
+                                           childPath += "/";
+                                       }
+                                       childPath += s;
+                                       return childPath;
+                                   })
+                                   .collect(Collectors.toList());
+            }
+            return children;
         } catch (KeeperException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -128,24 +144,74 @@ public class ZkClient {
     }
 
     public void setData(String nodePath, byte[] data, boolean createIfAbsent)
-            throws KeeperException, InterruptedException {
+            throws RuntimeException {
         try {
             zooKeeper.setData(nodePath, data, -1);
         } catch (KeeperException.NoNodeException e) {
             if (createIfAbsent) {
-                zooKeeper.create(nodePath, data, ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                        CreateMode.PERSISTENT);
+                try {
+                    zooKeeper.create(nodePath, data, ZooDefs.Ids.OPEN_ACL_UNSAFE,
+                            CreateMode.PERSISTENT);
+                } catch (Exception e1) {
+                    throw new RuntimeException(e1);
+                }
             } else {
-                throw e;
+                throw new RuntimeException(e);
+            }
+        } catch (KeeperException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String createNode(String nodePath, byte[] data, boolean ephemeral, boolean sequential,
+                           boolean createParentIfAbsent) {
+        CreateMode mode;
+        if (ephemeral && sequential) {
+            mode = CreateMode.EPHEMERAL_SEQUENTIAL;
+        } else if (ephemeral) {
+            mode = CreateMode.EPHEMERAL;
+        } else if (sequential) {
+            mode = CreateMode.PERSISTENT_SEQUENTIAL;
+        } else {
+            mode = CreateMode.PERSISTENT;
+        }
+
+        while (true) {
+            try {
+                return zooKeeper.create(nodePath, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, mode);
+            } catch (KeeperException.NoNodeException e) {
+                if (createParentIfAbsent) {
+                    try {
+                        createNode(getParent(nodePath), null, false, false, true);
+                    } catch (Exception e1) {
+                        throw new RuntimeException(e1);
+                    }
+                } else {
+                    throw new RuntimeException(e);
+                }
+            } catch (KeeperException | InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
+    }
+
+    public void delete(String path) {
+        try {
+            zooKeeper.delete(path, -1);
+        } catch (KeeperException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getParent(String path) {
+        return path.substring(0, path.lastIndexOf("/"));
     }
 
     private void watchNode(String path) {
         try {
             zooKeeper.exists(path, true);
         } catch (KeeperException | InterruptedException e) {
-            throw new Error(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -153,7 +219,7 @@ public class ZkClient {
         try {
             zooKeeper.getChildren(path, true);
         } catch (KeeperException | InterruptedException e) {
-            throw new Error(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -162,7 +228,7 @@ public class ZkClient {
             zooKeeper.close();
             eventThread.shutdown();
         } catch (InterruptedException e) {
-            throw new Error(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -170,7 +236,7 @@ public class ZkClient {
 
         @Override
         public void process(WatchedEvent event) {
-            System.out.println("=====Event Arrive====\n" + event);
+            logger.debug("=====Event Arrive====\n" + event);
 
             if (event.getType() == Event.EventType.None) {
                 eventThread.execute(() -> handleStateChanged(event.getState()));
@@ -184,13 +250,24 @@ public class ZkClient {
         }
     }
 
+
+    /**
+     * Base usage, just for test.
+     */
     public static void main(String[] args) throws InterruptedException {
         ZkClient client = ZkClient.createClient("localhost:2181");
         client.subscribeStateChanged(state -> {
             System.out.println("state changed: " + state);
         });
-        TimeUnit.SECONDS.sleep(2);
+        //wait for connect.
+        while (!client.getPrimitiveClient().getState().isConnected()) {
+            TimeUnit.SECONDS.sleep(1);
+        }
 
+        //init node value
+        client.setData("/test", "init".getBytes(), true);
+
+        //register node changed listener.
         client.subscribeDataChanged("/test", new IZkDataListener() {
             @Override
             public void onNodeDataChanged(String path, Optional<String> data) {
@@ -203,6 +280,7 @@ public class ZkClient {
             }
         });
 
+        //register child changed listener.
         client.subscribeChildChanged("/test", new IZkChildListener() {
             @Override
             public void onChildChanged(String path, List<String> children) {
