@@ -11,4 +11,6 @@ public interface XmlUserMapper {
     List<User> findAllUsers();
 
     int insertUser(User user);
+
+    int delete(User user);
 }

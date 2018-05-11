@@ -8,23 +8,25 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Date;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
+@EnableTransactionManagement
 public class MybatisDemoApplication implements CommandLineRunner {
 
     @Autowired
     private UserDao userDao;
 
-	public static void main(String[] args) {
-		SpringApplication.run(MybatisDemoApplication.class, args);
-	}
+    public static void main(String[] args) {
+      SpringApplication.run(MybatisDemoApplication.class, args);
+    }
 
 
     @Override
     public void run(String... args) throws Exception {
-	    User user = User.of("syh", "123", new Date());
-        /*System.out.println(userDao.addUser(user));
-        System.out.println("id=" + user.getUserId());*/
+	      User user = User.of("syh", "123", new Date());
+        System.out.println(userDao.addUser(user));
+        System.out.println("id=" + user.getUserId());
         System.out.println(userDao.getAllUsers());
     }
 }

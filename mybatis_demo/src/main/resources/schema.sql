@@ -1,4 +1,4 @@
---DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` bigint(20) NOT NULL AUTO_INCREMENT,

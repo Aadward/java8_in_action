@@ -25,4 +25,8 @@ public interface AnnotationUserMapper {
     @Insert("INSERT INTO `user` (`username`, `password`, `create_time`) VALUES (#{user.username}, #{user.password}, #{user.createTime})")
     @Options(useGeneratedKeys = true, keyColumn = "user_id", keyProperty = "userId")
     int insertUser(@Param("user") User user);
+
+
+    @Delete("DELETE FROM `user` WHERE user_id=#{userId}")
+    int delete(@Param("user") User user);
 }

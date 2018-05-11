@@ -17,5 +17,7 @@
         INSERT INTO `user` (`username`, `password`, `create_time`) VALUES (#{username}, #{password}, #{createTime})
     </insert>
 
-
+    <delete id="delete" parameterType="user">
+        DELETE FROM `user` WHERE user_id=#{userId}
+    </delete>
 </mapper>

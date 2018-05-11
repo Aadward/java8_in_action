@@ -9,4 +9,6 @@ public interface UserDao {
     List<User> getAllUsers();
 
     int addUser(User user);
+
+    int addThenThrowException(User user);
 }
