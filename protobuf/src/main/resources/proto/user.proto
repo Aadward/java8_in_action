@@ -1,0 +1,35 @@
+/*
+    tag 19000-19999 为保留字，不能够使用
+*/
+
+syntax = "proto3";
+
+package com.example.protobuf.protocol;
+
+option java_outer_classname = "UserProto";
+
+import "imported.proto";
+
+message User {
+    int32 id = 1;
+    string name = 2;
+    string phone_number = 3;
+    string email = 4;
+    repeated string description = 5;
+    com.example.protobuf.protocol.Version version = 6;
+
+    enum Sex {
+        /*
+        proto3.5之后，Enum类型也可以有reserved字段
+        reserved 9;
+        reserved UNKNOWN;
+        */
+
+        /* 每一个Enum都需要有一个值为0的元素，代表第一个元素 */
+        MALE = 0;
+        FEMALE = 1;
+    }
+
+    /* 为User这个message增加tag保留字 9 */
+    reserved 9;
+}

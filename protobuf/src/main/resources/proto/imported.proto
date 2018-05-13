@@ -1,0 +1,12 @@
+/* 被引用的proto文件 */
+
+
+syntax = "proto3";
+
+package com.example.protobuf.protocol;
+
+/*
+    import public 传递引用 version.proto，不加public的话，其他proto
+    引用此proto时，将不能使用version.proto中定义的message
+ */
+import public "version.proto";

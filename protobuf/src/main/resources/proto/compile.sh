@@ -1,0 +1,1 @@
+protoc -I=. --java_out=/Users/syh/IdeaProjects/Examples/protobuf/src/main/java user.proto version.proto imported.proto

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package com.example.protobuf.protocol;
+
+option java_outer_classname = "VersionProto";
+
+message Version {
+    int32 version = 1;
+}
