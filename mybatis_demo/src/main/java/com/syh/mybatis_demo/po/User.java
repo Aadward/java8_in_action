@@ -1,5 +1,6 @@
 package com.syh.mybatis_demo.po;
 
+import java.util.List;
 import lombok.*;
 
 import java.util.Date;
@@ -13,7 +14,7 @@ import org.apache.ibatis.type.Alias;
 @Alias("user")
 public class User {
 
-    long userId;
+    Long userId;
 
     @NonNull
     String username;
@@ -23,4 +24,6 @@ public class User {
 
     @NonNull
     Date createTime;
+
+    List<Follower> followers;
 }

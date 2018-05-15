@@ -5,6 +5,7 @@ import com.syh.mybatis_demo.po.User;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -33,7 +34,8 @@ public class XmlUserDao implements UserDao {
 
     @Override
     @Transactional
-    public int addThenThrowException(User user) {
+    @Async
+    public void addThenThrowException(User user) {
         xmlUserMapper.insertUser(user);
         throw new RuntimeException("error happens");
     }

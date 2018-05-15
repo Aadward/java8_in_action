@@ -4,13 +4,30 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.syh.mybatis_demo.mapper.XmlUserMapper">
 
-    <resultMap id="userMap" type="user">
+    <resultMap id="baseSelect" type="user">
         <id column="user_id" property="userId" />
-        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" javaType="Date" />
+        <result column="username" property="username" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="DATE" />
+        <!--<collection property="followers" column="user_id" javaType="ArrayList"
+          ofType="follower" select="findFollowers" />-->
+        <collection property="followers" column="user_id" javaType="ArrayList" ofType="follower"
+            resultMap="followerResult" />
     </resultMap>
-    
-    <select id="findAllUsers" resultMap="userMap">
-        SELECT * FROM `user`
+
+    <resultMap id="followerResult" type="follower">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="user_id" property="userId" />
+    </resultMap>
+
+    <!--<select id="findFollowers" parameterType="java.lang.Long" resultMap="followerResult">
+        SELECT * FROM follower WHERE user_id = #{user_id}
+
+    </select>-->
+
+    <select id="findAllUsers" resultMap="baseSelect">
+        SELECT * FROM `user` u LEFT JOIN follower f ON u.user_id = f.user_id;
     </select>
 
     <insert id="insertUser" useGeneratedKeys="true" keyColumn="user_id" keyProperty="userId">
@@ -20,4 +37,5 @@
     <delete id="delete" parameterType="user">
         DELETE FROM `user` WHERE user_id=#{userId}
     </delete>
+
 </mapper>

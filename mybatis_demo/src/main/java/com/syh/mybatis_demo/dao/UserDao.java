@@ -10,5 +10,5 @@ public interface UserDao {
 
     int addUser(User user);
 
-    int addThenThrowException(User user);
+    void addThenThrowException(User user);
 }
