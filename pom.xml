@@ -32,6 +32,7 @@
         <module>zookeeper-demo</module>
         <module>spring-boot-jdbc-demo</module>
         <module>protobuf</module>
+        <module>hive-jdbc</module>
     </modules>
 
     <dependencyManagement>
