@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package com.example.protobuf.protocol;
+
+option java_outer_classname = "AchievementProto";
+
+// Type:    Request
+// APi:     /achievement/list
+// Method:  GET
+// Desc:    请求成就列表
+message AchievementListRequest {
+  AchievementType type = 1;
+
+  // 页码
+  int32 page_num = 2;
+
+  // 每一页展示的个数
+  int32 page_size = 3;
+}
+
+
+// Type:    Response
+// APi:     /achievement/list
+// Method:  GET
+// Desc:    成就列表返回
+message AchievementListResponse {
+  //错误码， 0表示成功， 其他表示失败
+  int32 err_code = 1;
+
+  //错误信息， 当0时为空
+  string err_msg = 2;
+
+  int32 page_num = 3;
+
+  int32 page_size = 4;
+
+  int32 total = 5;
+
+  int32 achieved = 6;
+
+  repeated AchievementResult result = 7;
+
+}
+
+
+message AchievementResult {
+  //成就名字
+  string name = 1;
+
+  //成就级别
+  int32 level = 2;
+
+  //成就的类型
+  AchievementType type = 3;
+
+  //成就都图片链接
+  string picture_url = 4;
+
+  //成就是否已经达成
+  bool is_achieved = 5;
+
+  //得到成就的途径
+  string way_to_get = 6;
+
+  //成就的特效
+  repeated string special_function = 7;
+}
+
+//成就的类型
+enum AchievementType {
+  ALL = 0;
+  SIGN_IN = 1;
+  INVITE = 2;
+  TASK = 3;
+}

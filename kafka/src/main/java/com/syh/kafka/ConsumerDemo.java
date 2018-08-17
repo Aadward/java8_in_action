@@ -9,7 +9,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.util.Collections;
 import java.util.Map;
 
-public class ConsumerFactory {
+public class ConsumerDemo {
 
     static Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
             .put("bootstrap.servers", "localhost:9092")

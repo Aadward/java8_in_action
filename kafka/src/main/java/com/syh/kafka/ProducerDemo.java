@@ -12,7 +12,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Map;
 
-public class ProducerFactory {
+public class ProducerDemo {
 
     static Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
             .put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")

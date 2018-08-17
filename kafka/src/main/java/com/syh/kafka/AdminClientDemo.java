@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class AdminClientFactory {
+public class AdminClientDemo {
 
     static Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
             .put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
@@ -21,7 +21,7 @@ public class AdminClientFactory {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 
-        AdminClient client = AdminClientFactory.create();
+        AdminClient client = AdminClientDemo.create();
 
         try {
             printTotics(client);

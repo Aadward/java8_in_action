@@ -32,6 +32,8 @@
         <module>zookeeper-demo</module>
         <module>spring-boot-jdbc-demo</module>
         <module>kafka</module>
+        <module>protobuf</module>
+        <module>hive-jdbc</module>
     </modules>
 
     <dependencyManagement>
@@ -59,6 +61,12 @@
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>3.4.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>1.2.47</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

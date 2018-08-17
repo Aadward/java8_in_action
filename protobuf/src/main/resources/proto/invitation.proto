@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package com.example.protobuf.protocol;
+
+option java_outer_classname = "InvitationProto";
+
+// Type:    Request
+// APi:     /invitation/invite
+// Method:  PUT
+// Desc:    使用邀请码
+message InviteRequest {
+  // 用户使用的邀请码
+  string invitation_code = 1;
+}
+
+// Type:    Response
+// APi:     /invitation/invite
+// Method:  PUT
+// Desc:    使用邀请码结果返回
+message InviteResponse {
+  int32 err_code = 1;
+  string err_msg = 2;
+}
+
+
+// Type:    Response
+// APi:     /invitation/info
+// Method:  GET
+// Desc:    用户邀请主界面信息
+message InfoResponse {
+  //错误码， 0表示成功， 其他表示失败
+  int32 err_code = 1;
+
+  //错误信息， 当0时为空
+  string err_msg = 2;
+
+  InfoResult result = 3;
+}
+
+
+
+message InfoResult {
+  // 邀请规则说明
+  string invitation_rule = 1;
+
+  // TB说明
+  string tb_description = 2;
+
+  // 用户的邀请码
+  string invitation_code = 3;
+
+  // 已经邀请都人数
+  int32 invited_members = 4;
+
+  // 邀请用户的TB奖励
+  int32 tb_reward = 5;
+
+  // 是否已经被邀请过了
+  bool invited = 6;
+}
+
