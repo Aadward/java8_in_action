@@ -12,7 +12,7 @@ public class QuickSort {
         sort(a, 0, a.length - 1);
     }
 
-    public static void sort(int[] a, int lo, int hi) {
+    private static void sort(int[] a, int lo, int hi) {
         if (lo < hi) {
             int mid = partition(a, lo, hi);
             sort(a, lo, mid - 1);
@@ -21,7 +21,7 @@ public class QuickSort {
     }
 
     //注意先移动再比较
-    public static int partition(int[] a, int lo, int hi) {
+    private static int partition(int[] a, int lo, int hi) {
         //随机找出一个数字
         int seedIndex = new Random().nextInt(hi - lo) + lo;
         swap(a, lo, seedIndex);
@@ -29,29 +29,18 @@ public class QuickSort {
         int seed = a[lo];
         int i = lo, j = hi + 1;
         while (i < j) {
-            while (a[--j] > seed) {
-                if (i >= j) {
-                    break;
-                }
-            }
-            while (a[++i] < seed && i < j) {
-                if (i >= j) {
-                    break;
-                }
-            }
-
+            while (i < j && i < --j && a[j] > seed);
+            while (i < j && ++i < j && a[i] < seed);
             if (i < j) {
                 swap(a, i, j);
-            } else {
-                break;
             }
         }
-        swap(a, lo, j);
-        return j;
+        swap(a, lo, i);
+        return i;
     }
 
 
-    public static void swap(int[] a, int index1, int index2) {
+    private static void swap(int[] a, int index1, int index2) {
         int tmp = a[index1];
         a[index1] = a[index2];
         a[index2] = tmp;

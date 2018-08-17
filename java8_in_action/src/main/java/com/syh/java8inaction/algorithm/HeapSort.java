@@ -1,7 +1,5 @@
 package com.syh.java8inaction.algorithm;
 
-import java.util.stream.IntStream;
-
 public class HeapSort {
 
     public static void main(String[] args) {
@@ -10,25 +8,21 @@ public class HeapSort {
 
 
     public static void sort(int[] a) {
-        MinHeap heap = new MinHeap(a);
-        //Arrays.stream(a).forEach(heap::add);
-        int size = heap.n;
-        int[] result = IntStream.generate(heap::delMin).limit(size).toArray();
-        for (int i = 0; i < result.length; i++) {
-            a[i] = result[i];
-        }
+        MaxHeap heap = new MaxHeap(a);
+        heap.sort();
+        System.arraycopy(heap.a, 1, a, 0, heap.a.length - 1);
     }
 
 
-    private static class MinHeap {
+    private static class MaxHeap {
         int a[];
         int n = 0;
 
-        public MinHeap(int size) {
+        public MaxHeap(int size) {
             a = new int[size + 1];
         }
 
-        public MinHeap(int[] a) {
+        public MaxHeap(int[] a) {
             int[] copy = new int[a.length + 1];
             System.arraycopy(a, 0, copy, 1, a.length);
             this.a = copy;
@@ -38,13 +32,21 @@ public class HeapSort {
             }
         }
 
+        public void sort() {
+            while (n > 0) {
+                swap(a, 1, n);
+                n -= 1;
+                sink(1);
+            }
+        }
+
         void sink(int i) {
             while (i * 2 <= n) {
                 int j = i * 2;
                 if (j + 1 <= n) {
-                    j = a[j] > a[j+1] ? j+1 : j;
+                    j = a[j] > a[j+1] ? j : j + 1;
                 }
-                if (a[i] > a[j]) {
+                if (a[i] < a[j]) {
                     swap(a, i, j);
                     i = j;
                 } else {
@@ -55,7 +57,7 @@ public class HeapSort {
 
         void swim(int i) {
             while (i / 2 >= 1) {
-                if (a[i] < a[i / 2]) {
+                if (a[i] > a[i / 2]) {
                     swap(a, i, i / 2);
                     i = i / 2;
                 } else {
