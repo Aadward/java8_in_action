@@ -34,6 +34,7 @@
         <module>kafka</module>
         <module>protobuf</module>
         <module>hive-jdbc</module>
+        <module>json-checker</module>
     </modules>
 
     <dependencyManagement>
