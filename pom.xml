@@ -35,6 +35,7 @@
         <module>protobuf</module>
         <module>hive-jdbc</module>
         <module>json-checker</module>
+        <module>spring-kafka</module>
     </modules>
 
     <dependencyManagement>
